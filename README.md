@@ -1,2 +1,3 @@
 # pde-lm
-lm-method pinn
+lm-method pinn 2024
+
