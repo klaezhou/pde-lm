@@ -43,7 +43,7 @@ def plot_model_error(model, x_bounds, y_bounds, device='cuda'):
     error = "{:.4f}".format(error)
     plt.figtext(0.45, 0, f"L2 error: {error}", ha='center', fontsize=10)
     plt.show()
-    
+
     return error
     
 # 使用示例
