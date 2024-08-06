@@ -1,15 +1,15 @@
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.ticker import FuncFormatter
-
+from matplotlib.ticker import MultipleLocator
 def log_formatter(x, pos):
     return f'$10^{{{int(x)}}}$'
 
 def ms_formatter(x, pos):
     return f'{x:.3f}ms'
 
-def plot_time(time_arrary, x_axis,color, linestyle, line_widths=2, min_loss_offsets=0.1, title="avg elapsed time", xlabel="parameter numbers", ylabel="ms", figsize=(17, 10)):
-    """
+def plot_time(time_arrary, x_axis,color, linestyle, line_widths=1.5, min_loss_offsets=3, title="avg elapsed time", xlabel="parameter numbers", ylabel="ms", figsize=(5, 5)):
+    """s
     绘制时间曲线，并标注每条曲线的最小损失值。
     参数:
     - time_array: numpy array, 包含平均时间的曲线
@@ -35,14 +35,14 @@ def plot_time(time_arrary, x_axis,color, linestyle, line_widths=2, min_loss_offs
     min_time = np.min(time)
     min_offset = min_loss_offsets if min_loss_offsets else 0
     
-    ax2.annotate(f'min time: {min_time:.2f}', xy=(np.argmin(time), min_time),
-                xytext=(np.argmin(time), min_time + min_offset),
+    ax2.annotate(f'min time: {min_time:.2f}', xy=(x_axis[np.argmin(time)], min_time),
+                xytext=(x_axis[np.argmin(time)], min_time + min_offset),
                 arrowprops=dict(facecolor=color, shrink=0.05))
 
     ax2.set_title(title, fontsize=16)
     ax2.set_ylabel(ylabel, fontsize=14)
     ax2.set_xlabel(xlabel, fontsize=14)
-    
+    ax2.xaxis.set_major_locator(MultipleLocator(100))
     ax2.grid(True, which='both', linestyle='--', linewidth=0.5)
     ax2.yaxis.set_major_formatter(FuncFormatter(ms_formatter))
     ax2.legend(fontsize=12)
