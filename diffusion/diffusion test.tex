@@ -1,0 +1,63 @@
+\documentclass{article}
+\usepackage[british]{babel}
+\usepackage{amsmath}
+
+%%%%%%%%%% Start TeXmacs macros
+\catcode`\>=\active \def>{
+\fontencoding{T1}\selectfont\symbol{62}\fontencoding{\encodingdefault}}
+\newcommand{\tmtextbf}[1]{\text{{\bfseries{#1}}}}
+%%%%%%%%%% End TeXmacs macros
+
+\begin{document}
+
+Note---8.5 by Zhou
+
+\section{Diffusion Equation }
+
+diffusion equation:
+\[ \frac{\partial y}{\partial t} = \frac{\partial^2 y}{\partial x^2} - e^{-
+   t} (\sin (\pi x) - \pi^2 \sin (\pi x)), \; x \in [1, - 1], t \in [0, 1] \]
+with the IC
+\[ y (x, 0) = \sin (\pi x) \]
+and the Dirichlet BD
+\[ y (- 1, t) = y (1, t) = 0 \]
+The solution is $y = e^{- t} \sin (\pi x)$
+
+\subsection{Numerical Results}
+
+\
+
+{\rendercode{Algorithm 1.1 Subsample Levenberg-Marquardt Method }}
+
+\tmtextbf{Settings: }
+
+GPU time
+
+\textbackslash begin\{algorithm\} \textbackslash caption\{Subsampled LM
+algorithm\} \textbackslash begin\{algorithmic\}[1] \textbackslash State
+\textbackslash textbf\{Step 0\} Choose an initial sample set \$\textbackslash
+mathcal\{B\}\_0\$ and initial parameter \$\textbackslash lambda\_0 >
+\textbackslash lambda\_\{\textbackslash min\}\$ with \$\textbackslash
+lambda\_\{\textbackslash min\} \textbackslash in (0,1)\$, initial point
+\$x\^{}0 \textbackslash in \textbackslash mathbb\{R\}\^{}n\$, the constants
+\$\textbackslash gamma > 1, \textbackslash eta\_1 \textbackslash in (0,1),
+\textbackslash eta\_2 > 0\$. Set \$k = 0\$. \textbackslash State
+\textbackslash textbf\{Step 1\} If a stopping criteria is satisfied, stop;
+otherwise, go to Step 2. \textbackslash State \textbackslash textbf\{Step 2\}
+Evaluate \$f\_k\$, \$g\_k\$, and \$H\_k\$, and obtain the direction \$s\_k\$
+by solving the linear system (5) approximately. \textbackslash State
+\textbackslash textbf\{Step 3\} Compute the ratio \$\textbackslash rho\_k\$ by
+(6). \textbackslash State \textbackslash textbf\{Step 4\} If \$\textbackslash
+rho\_k \textbackslash geq \textbackslash eta\_1\$ and \$\textbackslash\textbar
+g\_k\textbackslash\textbar \^{}2 \textbackslash geq \textbackslash eta\_2 /
+\textbackslash lambda\_k\$, set \$x\^{}\{k+1\} = x\^{}k + s\^{}k\$ and
+\$\textbackslash lambda\_\{k+1\} = \textbackslash max
+\textbackslash\{\textbackslash lambda\_k / \textbackslash gamma,
+\textbackslash lambda\_\{\textbackslash min\}\textbackslash\}\$; otherwise,
+set \$x\^{}\{k+1\} = x\^{}k\$ and \$\textbackslash lambda\_\{k+1\} =
+\textbackslash gamma \textbackslash lambda\_k\$. \textbackslash State
+\textbackslash textbf\{Step 5\} Choose a new sample set \$\textbackslash
+mathcal\{B\}\_\{k+1\}\$. Set \$k = k + 1\$. Go back to Step 1. \textbackslash
+end\{algorithmic\} \textbackslash end\{algorithm\}
+
+\end{document}
