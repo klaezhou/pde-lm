@@ -8,7 +8,7 @@ def log_formatter(x, pos):
 def ms_formatter(x, pos):
     return f'{x:.3f}ms'
 
-def plot_time(time_arrary, color, linestyle, line_widths=2, min_loss_offsets=0.1, title="avg elapsed time", xlabel="parameter numbers", ylabel="ms", figsize=(17, 10)):
+def plot_time(time_arrary, x_axis,color, linestyle, line_widths=2, min_loss_offsets=0.1, title="avg elapsed time", xlabel="parameter numbers", ylabel="ms", figsize=(17, 10)):
     """
     绘制时间曲线，并标注每条曲线的最小损失值。
     参数:
@@ -30,7 +30,7 @@ def plot_time(time_arrary, color, linestyle, line_widths=2, min_loss_offsets=0.1
     time =time[time != 0]
     
     
-    ax2.plot(time, color, label='time', linestyle=linestyle, linewidth=line_widths)
+    ax2.plot(x_axis,time, color, label='time', linestyle=linestyle, linewidth=line_widths)
     
     min_time = np.min(time)
     min_offset = min_loss_offsets if min_loss_offsets else 0
