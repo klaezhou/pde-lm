@@ -38,10 +38,13 @@ def plot_model_error(model, x_bounds, y_bounds, device='cuda'):
     
     # 计算L2误差
     outputs = np.abs(y)
+    real=np.abs(target_y.numpy())
     error = np.sqrt(np.sum(outputs**2)) / np.sqrt(len(y))
+    rel_error=np.sqrt(np.sum(real**2))/  np.sqrt(len(y))
+    error=error/rel_error
     print('error', error)
-    error = "{:.4f}".format(error)
-    plt.figtext(0.45, 0, f"L2 error: {error}", ha='center', fontsize=10)
+    error = "{:.8f}".format(error)
+    plt.figtext(0.45, 0, f"relative L2 error: {error}", ha='center', fontsize=10)
     plt.show()
 
     return error
