@@ -299,6 +299,8 @@ class PINN_LM:
         
         
         #参数准备
+        lmin=1e-9
+        lmax=1e12
         k = 0
         kmax = step
         p = params.to(device)
@@ -309,7 +311,12 @@ class PINN_LM:
         alpha = 1
         lambda_up = 10
         lambda_down = 0.1
+        yi=1e-15
+        yi2=1e-15
         diag = torch.eye(p_number)
+        fx = fx_fun(p)
+        mu=torch.norm(fx, p=2).cpu().detach().item()**2
+        print('mu=',mu)
         elapsed_time_ms=0
         ####随机选择部分参数进行优化
         selected_columns = np.random.choice(p_number, opt_num, replace=False)
@@ -317,45 +324,41 @@ class PINN_LM:
         if deterministic:
             '''严格lm'''
             while (k < kmax):  # (not found)
+                
                 start_event = torch.cuda.Event(enable_timing=True)
                 end_event = torch.cuda.Event(enable_timing=True)
                 start_event.record()
                 k = k + 1
                 
                 J_opt=J[:,selected_columns]
+                
                 A_opt= torch.matmul(J_opt.t(),J_opt)
                 diag=torch.eye(A_opt.shape[0]).to(device)
                 H = A_opt + mu * diag
                 
                 fx = fx_fun(p)
-                
+                gkF=torch.matmul(J_opt.t(),fx)
+                gk=torch.matmul(J.t(),fx)
                 try:              
-                    h_lm = torch.linalg.solve(-H, torch.matmul(J_opt.t(),fx))             
+                    h_lm = torch.linalg.solve(H, -gkF)             
                 except:
-                    eigenvalues, eigenvectors = torch.linalg.eig(-H)
-                    # 输出特征值和特征向量
-                    print("特征值：", eigenvalues)
-                    print("特征向量：\n", eigenvectors)
-                    print('singular matrix ')
-                    break
-               
-                if (torch.abs(F_p - F_pnew)/torch.tensor(F_p).to(device)< 1e-7):  # 满足收敛条件
+                    print('singular matrix')
+                
+                if (torch.abs(F_p - F_pnew)/torch.tensor(F_p).to(device)< 1e-4):  # 满足收敛条件
                     print('converge in para updates')
                     break
                 else:
                     
                     p_new=p.clone()
                     p_new[selected_columns]+= alpha * torch.squeeze(h_lm)
-                    
-                    
-                    F_p = F_fun(fx)
-                    
+                                        
+                    F_p = F_fun(fx)                    
                     fx_new = fx_fun(p_new)
-                    F_pnew = F_fun(fx_new)
-                    
-                    
+                    F_pnew = F_fun(fx_new)             
                     o = F_p - F_pnew
-                    if o > 0:
+                    o_=torch.matmul(gkF.t(),h_lm)+1/2*torch.matmul(h_lm.t(),torch.matmul(A_opt,h_lm))+1/2*mu*torch.norm(h_lm, p=2)
+                    
+                    if o/o_ > yi and torch.norm(gk,p=2)**2>yi2/mu:
                         self.loss_record[self.loss_iter] = float(F_pnew.item())
                         self.loss_iter += 1
                         if k%10==0:
@@ -366,12 +369,12 @@ class PINN_LM:
                             print(f'Elapsed: {elapsed_time_ms:.1f}ms')  
                         p = p_new
                         J = J_func(p)  # update J
-                        mu = mu * lambda_down  # lower limit u =1e-11
+                        mu = max(mu * lambda_down,lmin)  # lower limit u =1e-11
                        
                         
                     else:
                         if k % 10 == 0:print("reject move")
-                        mu = mu * lambda_up  # Up limit u =1e11
+                        mu = min(mu * lambda_up,lmax)  # Up limit u =1e11
                     end_event.record()
                     torch.cuda.synchronize()  # Wait for the events to be recorded!
                     elapsed_time_ms = start_event.elapsed_time(end_event)
@@ -382,9 +385,9 @@ class PINN_LM:
         else:
             pass
                     
-        self.avg_time = np.mean(self.time_record[self.time_record != 0])        
+        self.avg_time = np.sum(self.time_record[self.time_record != 0])        
                 
-        return p
+        
     
     
     def plt(self):

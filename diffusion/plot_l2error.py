@@ -3,6 +3,7 @@ import torch
 import matplotlib.pyplot as plt
 
 def plot_model_error(model, x_bounds, y_bounds, device='cuda'):
+    
     # 解包上下界
     x_min, x_max = x_bounds
     y_min, y_max = y_bounds
@@ -46,7 +47,8 @@ def plot_model_error(model, x_bounds, y_bounds, device='cuda'):
     error = "{:.8f}".format(error)
     plt.figtext(0.45, 0, f"relative L2 error: {error}", ha='center', fontsize=10)
     plt.show()
-
+    plt.close(fig) 
+    
     return error
     
 # 使用示例
