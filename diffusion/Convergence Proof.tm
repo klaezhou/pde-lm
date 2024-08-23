@@ -34,8 +34,8 @@
 
     where <math|r<rsub|i> > are continuously differentiable,
     <math|i=1,\<cdots\>,M>. Build a set <math|<with|font-shape|italic|\<cal-F\><rsub|b>>\<assign\><around*|{|F<rsub|l><around*|\|||\<nobracket\>>
-    F<rsub|l>\<subseteq\><space|0.8spc>the<space|0.6spc>power
-    <space|0.6spc>set <space|0.6spc>of<space|0.8spc><around*|{|1,\<cdots\>,d|}>,<infix-and><around*|\||F<rsub|l>|\|>=b|}>>,
+    F<rsub|l>\<subset\><space|0.8spc>the<space|0.6spc>power <space|0.6spc>set
+    <space|0.6spc>of<space|0.8spc><around*|{|1,\<cdots\>,d|}>,<infix-and><around*|\||F<rsub|l>|\|>=b|}>>,
     uniformly random choose <math|F\<in\>\<cal-F\><rsub|b>>
 
     <\equation>
@@ -220,7 +220,7 @@
 
     <\proof>
       \ Recall the definition <math|><math|<with|font-shape|italic|\<cal-F\><rsub|b>>\<assign\><around*|{|F<rsub|l><around*|\|||\<nobracket\>>
-      F<rsub|l>\<subseteq\><space|0.8spc>the<space|0.6spc>power
+      F<rsub|l>\<subset\><space|0.8spc>the<space|0.6spc>power
       <space|0.6spc>set <space|0.6spc>of<space|0.8spc><around*|{|1,\<cdots\>,d|}>,<infix-and><around*|\||F<rsub|l>|\|>=b|}>>,
       so <math|<around*|\||\<cal-F\><rsub|b>|\|>=<binom|b|d>>, and <math|F>
       is uniformly random chosen from <math|\<cal-F\><rsub|b>>.\ 
@@ -270,7 +270,7 @@
         <around*|{|<frac|2|\<varepsilon\>>,<space|0.6spc><frac|2*\<eta\><rsub|2>|\<varepsilon\>>,<space|0.6spc>c,<frac|8<around*|(|L+c|)>|1-\<eta\><rsub|1>>,<space|0.6spc>\<gamma\>\<mu\><rsub|min>|}>
       </equation>
 
-      Define <math|R<rsub|k>=log<rsub|\<gamma\>><around*|(|<frac|\<mu\><rsup|k>|\<chi\>>|)>,>
+      Define <math|R<rsub|k>=log<rsub|\<gamma\>><around*|(|<frac|\<chi\>|\<mu\><rsup|k>>|)>,>
       by the assumption, <math|R<rsub|k>\<leqslant\>0 > for all
       <math|k\<gtr\>max<around*|(|k<rsub|0>,k<rsub|1>|)> >. \ 
 
@@ -287,7 +287,7 @@
       <math|<around*|\<\|\|\>|g<around*|(|x<rsub|F><rsup|k>|)>|\<\|\|\>><rsup|2>\<gtr\><frac|\<eta\><rsub|2>|\<mu\><rsup|k>>>
       which implies a successful iteration.\ 
 
-      \ <math|E<around*|[|R<rsub|k+1>|]>=v<around*|(|log<rsub|\<gamma\>><around*|(|<frac|\<mu\><rsup|k>|\<chi\>*\<gamma\>>|)>|)>+<around*|(|1-v|)>*log<rsub|\<gamma\>><around*|(|<frac|\<mu\><rsup|k>\<gamma\>|\<chi\>*>|)>=><math|v<around*|(|log<rsub|\<gamma\>><around*|(|<frac|\<mu\><rsup|k>|\<chi\>*>|)>-1|)>+<around*|(|1-v|)><around*|(|log*<rsub|\<gamma\>><around*|(|<frac|\<mu\><rsup|k>|\<chi\>*>|)>+1
+      \ <math|E<around*|[|R<rsub|k+1>|]>=v<around*|(|log<rsub|\<gamma\>><around*|(|<frac|\<chi\>*\<gamma\>|\<mu\><rsup|k>*>|)>|)>+<around*|(|1-v|)>*log<rsub|\<gamma\>><around*|(|<frac|\<chi\>*|\<mu\><rsup|k>*\<gamma\>>|)>=><math|v<around*|(|log<rsub|\<gamma\>><around*|(|<frac|\<chi\>|\<mu\><rsup|k>>|)>+1|)>+<around*|(|1-v|)><around*|(|log<rsub|\<gamma\>><around*|(|<frac|\<chi\>|\<mu\><rsup|k>>|)>-1
       |)>\<geqslant\>R<rsub|k>>
 
       Since <math|<around*|\||R<rsub|k+1>-R<rsub|k>|\|>\<geqslant\>1>, we can

@@ -316,15 +316,14 @@ class PINN_LM:
         diag = torch.eye(p_number)
         fx = fx_fun(p)
         mu=torch.norm(fx, p=2).cpu().detach().item()**2
-        print('mu=',mu)
         elapsed_time_ms=0
         ####随机选择部分参数进行优化
         selected_columns = np.random.choice(p_number, opt_num, replace=False)
         ####
         if deterministic:
+            print('begin a new iteration')
             '''严格lm'''
             while (k < kmax):  # (not found)
-                
                 start_event = torch.cuda.Event(enable_timing=True)
                 end_event = torch.cuda.Event(enable_timing=True)
                 start_event.record()
@@ -344,11 +343,10 @@ class PINN_LM:
                 except:
                     print('singular matrix')
                 
-                if (torch.abs(F_p - F_pnew)/torch.tensor(F_p).to(device)< 1e-4):  # 满足收敛条件
+                if (torch.abs(F_p - F_pnew)/torch.tensor(F_p).to(device)< 1e-5):  # 满足收敛条件
                     print('converge in para updates')
                     break
                 else:
-                    
                     p_new=p.clone()
                     p_new[selected_columns]+= alpha * torch.squeeze(h_lm)
                                         
@@ -358,7 +356,8 @@ class PINN_LM:
                     o = F_p - F_pnew
                     o_=torch.matmul(gkF.t(),h_lm)+1/2*torch.matmul(h_lm.t(),torch.matmul(A_opt,h_lm))+1/2*mu*torch.norm(h_lm, p=2)
                     
-                    if o/o_ > yi and torch.norm(gk,p=2)**2>yi2/mu:
+                    if o/o_ > yi and torch.norm(gkF,p=2)**2>yi2/mu:
+                        print('Zhuyi:',torch.sqrt(1-1/(2*torch.norm(gk,p=2)**4 * mu**2))) #torch.sqrt(1-1/(2*torch.norm(gk,p=2)**4 * mu**2))
                         self.loss_record[self.loss_iter] = float(F_pnew.item())
                         self.loss_iter += 1
                         if k%10==0:

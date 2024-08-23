@@ -1,0 +1,114 @@
+\documentclass{article}
+\usepackage[british]{babel}
+\usepackage{amsmath,amssymb,latexsym}
+
+%%%%%%%%%% Start TeXmacs macros
+\newcommand{\assign}{:=}
+\newcommand{\cdotnorm}{\cdot}
+\newcommand{\infixand}{\text{ and }}
+\newcommand{\matheuler}{\gamma}
+\newcommand{\tmop}[1]{\ensuremath{\operatorname{#1}}}
+\newcommand{\tmstrong}[1]{\textbf{#1}}
+\newcommand{\tmtextmd}[1]{\text{{\mdseries{#1}}}}
+\newcommand{\tmtextrm}[1]{\text{{\rmfamily{#1}}}}
+\newcommand{\tmtextup}[1]{\text{{\upshape{#1}}}}
+\newenvironment{proof}{\noindent\textbf{Proof\ }}{\hspace*{\fill}$\Box$\medskip}
+\newenvironment{tmindent}{\begin{tmparmod}{1.5em}{0pt}{0pt}}{\end{tmparmod}}
+\newenvironment{tmparmod}[3]{\begin{list}{}{\setlength{\topsep}{0pt}\setlength{\leftmargin}{#1}\setlength{\rightmargin}{#2}\setlength{\parindent}{#3}\setlength{\listparindent}{\parindent}\setlength{\itemindent}{\parindent}\setlength{\parsep}{\parskip}} \item[]}{\end{list}}
+\newenvironment{tmparsep}[1]{\begingroup\setlength{\parskip}{#1}}{\endgroup}
+\newtheorem{lemma}{Lemma}
+\newtheorem{proposition}{Proposition}
+\newtheorem{theorem}{Theorem}
+
+\begin{document}
+	
+	\section{Stochastic LM Algorithm}
+	
+	Consider the following least square problem:
+	\begin{equation}
+		\min_{x \in \mathbb{R}^d} f (x) := \frac{1}{2} \| r (x) \|^2 = \frac{1}{2}
+		\sum_{i = 1}^M | r_i (x) |^2
+	\end{equation}
+	where $r_i$ are continuously differentiable, $i = 1, \dots, M$. Build a set
+	$\mathcal{F}_b := \left\{ F_l \subseteq \{1, \dots, M\} \mid |F_l| = b \right\}$, uniformly
+	randomly choose $F \in \mathcal{F}_b$.
+	
+	\begin{equation}
+		\min f (x_{F}) := \frac{1}{2} \| r (x_F) \|^2
+	\end{equation}
+	
+	Construct a quadratic function as follows:
+	\begin{equation}
+		m_k (x_F^k + h) := f (x^k_F) + g^T (x_F^k) h + \frac{1}{2} h^T H
+		(x_F^k) h + \frac{1}{2} \mu^k \| h \|^2
+	\end{equation}
+	where $\mu_k$ is the regularization parameter and $g (x_F^k) = \frac{1}{2}
+	\sum_{i = 1}^M \nabla | r_i (x_F) |^2 = \sum_{i = 1}^M \nabla r_i (x_F) r_i
+	(x_F)$, $H (x_F^k) = \sum_{i = 1}^M \nabla r_i (x_F) \nabla r_i
+	(x_F)^T$. The LM step is obtained by solving the subproblem:
+	\[
+	\text{argmin}_h m_k (x_F^k + h)
+	\]
+	i.e., $h_F^k \leftarrow (H (x_F^k) + \mu^k I) h = - g (x_F^k)$. The ratio $\rho$
+	is defined as:
+	\begin{equation}
+		\rho_k = \frac{f (x^k_F) - f (x^k_F + h_F^k)}{m_k (x^k_F) - m_k (x^k_F +
+			h_F^k)}
+	\end{equation}
+	
+	\begin{flushleft}
+		\tmstrong{Algorithm 1.1\quad Stochastic LM algorithm}\smallskip
+		
+		\begin{tmindent}
+			Step 0: Randomly choose a parameter set $F$ and $\mu > 0$, initialize the
+			damping parameter $\mu_0 = \mu \| r (x_F^0) \|^2$, constants
+			$\gamma > 1$, $\mu_{\min}$, and $\eta_1, \eta_2 > 0$, set $k = 0$.
+			
+			\medskip
+			
+			Step 1: If a stopping criterion is satisfied, go to Step 0 or stop;
+			otherwise, go to Step 2.
+			
+			\medskip
+			
+			Step 2: Obtain the direction $h_F^k$.
+			
+			\medskip
+			
+			Step 3: Compute the ratio $\rho_k$ in (4).
+			
+			\medskip
+			
+			Step 4: If $\rho_k \geq \eta_1$ and $\| g (x_F^k) \|^2 \geq \frac{\eta_2}{\mu^k}$,
+			set $x^{k + 1}_F \leftarrow x^k_F + h_F^k$ and $\mu^{k + 1} = \max (\mu^k / \gamma, \mu_{\min})$;
+			otherwise, set $x_F^{k + 1} = x_F^k$ and $\mu^{k + 1} = \gamma \mu^k$. Then $k = k + 1$.
+		\end{tmindent}
+	\end{flushleft}
+	
+	\section{Convergence Analysis}
+	
+	\begin{proposition}
+		Suppose $\tau^k$ is the solution of $\text{argmin}_h m_k (x_F^k + h)$, then
+		the following condition holds:
+		\begin{equation}
+			m_k (x^k_F) - m_k (x^k_F + \tau^k) \geq \frac{1}{4}  \| g (x_F^k)
+			\|^2 \min \left\{ \frac{1}{\mu^k}, \frac{1}{\| H (x_F^k) \|} \right\}
+		\end{equation}
+		and
+		\begin{equation}
+			\| \tau^k \| \leq \frac{2 \| g (x_F^k) \|}{\mu^k}
+		\end{equation}
+	\end{proposition}
+	
+	\begin{proposition}
+		Suppose $r_i (x)$ are continuously differentiable and $\nabla r_i (x)$ are
+		Lipschitz continuous. If $f (x)$ is bounded and $\| H (x) \| \leq c$ for a
+		constant $c > 0$, then there exists a constant Lipschitz coefficient $L > 0$
+		and for any $x_F, y_F \in F$, the descent lemma tells us:
+		\begin{equation}
+			| f (y_F) - f (x_F) - \nabla f (x)^T  (y - x) | \leq \frac{L}{2} \| y
+			- x \|^2
+		\end{equation}
+	\end{proposition}
+	
+	% Continue with the rest of the document...
