@@ -4,9 +4,10 @@
 
 %%%%%%%%%% Start TeXmacs macros
 \newcommand{\assign}{:=}
-\newcommand{\cdotnorm}{\cdot}
+\newcommand{\cdummy}{\cdot}
 \newcommand{\infixand}{\text{ and }}
 \newcommand{\matheuler}{\gamma}
+\newcommand{\nobracket}{}
 \newcommand{\tmop}[1]{\ensuremath{\operatorname{#1}}}
 \newcommand{\tmstrong}[1]{\textbf{#1}}
 \newcommand{\tmtextmd}[1]{\text{{\mdseries{#1}}}}
@@ -19,96 +20,261 @@
 \newtheorem{lemma}{Lemma}
 \newtheorem{proposition}{Proposition}
 \newtheorem{theorem}{Theorem}
+%%%%%%%%%% End TeXmacs macros
+
+%
+
+
 
 \begin{document}
-	
-	\section{Stochastic LM Algorithm}
-	
-	Consider the following least square problem:
-	\begin{equation}
-		\min_{x \in \mathbb{R}^d} f (x) := \frac{1}{2} \| r (x) \|^2 = \frac{1}{2}
-		\sum_{i = 1}^M | r_i (x) |^2
-	\end{equation}
-	where $r_i$ are continuously differentiable, $i = 1, \dots, M$. Build a set
-	$\mathcal{F}_b := \left\{ F_l \subseteq \{1, \dots, M\} \mid |F_l| = b \right\}$, uniformly
-	randomly choose $F \in \mathcal{F}_b$.
-	
-	\begin{equation}
-		\min f (x_{F}) := \frac{1}{2} \| r (x_F) \|^2
-	\end{equation}
-	
-	Construct a quadratic function as follows:
-	\begin{equation}
-		m_k (x_F^k + h) := f (x^k_F) + g^T (x_F^k) h + \frac{1}{2} h^T H
-		(x_F^k) h + \frac{1}{2} \mu^k \| h \|^2
-	\end{equation}
-	where $\mu_k$ is the regularization parameter and $g (x_F^k) = \frac{1}{2}
-	\sum_{i = 1}^M \nabla | r_i (x_F) |^2 = \sum_{i = 1}^M \nabla r_i (x_F) r_i
-	(x_F)$, $H (x_F^k) = \sum_{i = 1}^M \nabla r_i (x_F) \nabla r_i
-	(x_F)^T$. The LM step is obtained by solving the subproblem:
-	\[
-	\text{argmin}_h m_k (x_F^k + h)
-	\]
-	i.e., $h_F^k \leftarrow (H (x_F^k) + \mu^k I) h = - g (x_F^k)$. The ratio $\rho$
-	is defined as:
-	\begin{equation}
-		\rho_k = \frac{f (x^k_F) - f (x^k_F + h_F^k)}{m_k (x^k_F) - m_k (x^k_F +
-			h_F^k)}
-	\end{equation}
-	
-	\begin{flushleft}
-		\tmstrong{Algorithm 1.1\quad Stochastic LM algorithm}\smallskip
-		
-		\begin{tmindent}
-			Step 0: Randomly choose a parameter set $F$ and $\mu > 0$, initialize the
-			damping parameter $\mu_0 = \mu \| r (x_F^0) \|^2$, constants
-			$\gamma > 1$, $\mu_{\min}$, and $\eta_1, \eta_2 > 0$, set $k = 0$.
-			
-			\medskip
-			
-			Step 1: If a stopping criterion is satisfied, go to Step 0 or stop;
-			otherwise, go to Step 2.
-			
-			\medskip
-			
-			Step 2: Obtain the direction $h_F^k$.
-			
-			\medskip
-			
-			Step 3: Compute the ratio $\rho_k$ in (4).
-			
-			\medskip
-			
-			Step 4: If $\rho_k \geq \eta_1$ and $\| g (x_F^k) \|^2 \geq \frac{\eta_2}{\mu^k}$,
-			set $x^{k + 1}_F \leftarrow x^k_F + h_F^k$ and $\mu^{k + 1} = \max (\mu^k / \gamma, \mu_{\min})$;
-			otherwise, set $x_F^{k + 1} = x_F^k$ and $\mu^{k + 1} = \gamma \mu^k$. Then $k = k + 1$.
-		\end{tmindent}
-	\end{flushleft}
-	
-	\section{Convergence Analysis}
-	
-	\begin{proposition}
-		Suppose $\tau^k$ is the solution of $\text{argmin}_h m_k (x_F^k + h)$, then
-		the following condition holds:
-		\begin{equation}
-			m_k (x^k_F) - m_k (x^k_F + \tau^k) \geq \frac{1}{4}  \| g (x_F^k)
-			\|^2 \min \left\{ \frac{1}{\mu^k}, \frac{1}{\| H (x_F^k) \|} \right\}
-		\end{equation}
-		and
-		\begin{equation}
-			\| \tau^k \| \leq \frac{2 \| g (x_F^k) \|}{\mu^k}
-		\end{equation}
-	\end{proposition}
-	
-	\begin{proposition}
-		Suppose $r_i (x)$ are continuously differentiable and $\nabla r_i (x)$ are
-		Lipschitz continuous. If $f (x)$ is bounded and $\| H (x) \| \leq c$ for a
-		constant $c > 0$, then there exists a constant Lipschitz coefficient $L > 0$
-		and for any $x_F, y_F \in F$, the descent lemma tells us:
-		\begin{equation}
-			| f (y_F) - f (x_F) - \nabla f (x)^T  (y - x) | \leq \frac{L}{2} \| y
-			- x \|^2
-		\end{equation}
-	\end{proposition}
-	
-	% Continue with the rest of the document...
+
+\tmtextup{\tmtextrm{Note 8.12
+
+$\| \cdummy \| \assign \| \cdummy \|_2 \tmop{norm}$
+
+\section{Stochastic LM Algorithm\tmtextmd{}}
+
+Consider the following least square problem
+\begin{equation}
+  \min_{x \in R^d} f (x) \assign \frac{1}{2} \| r (x) \|^2 = \frac{1}{2}
+  \sum_{i = 1}^M | r_i (x) |^2
+\end{equation}
+where $r_i $ are continuously differentiable, $i = 1, \cdots, M$. Build a set
+$\textit{\mathcal{F}\part{title}_b} \assign \left\{ F_l | \nobracket F_l \subset
+\hspace{0.8em} \tmop{the} \; \tmop{power} \; \tmop{set} \; \tmop{of}
+\hspace{0.8em} \{ 1, \cdots, d \}, \infixand | F_l | = b \right\}$, uniformly
+random choose $F \in \mathcal{F}_b$
+\begin{equation}
+  \min f (x_{F }) \assign \frac{1}{2} \| r (x_F) \|^2
+\end{equation}
+Construct a quadratic function as follows
+\begin{equation}
+  m_k (x_F^k + h) \assign f (x^k_F) + g^T (x_F^k) h + \frac{1}{2} h^T H
+  (x_F^k) h + \frac{1}{2} \mu^k \| h \|^2
+\end{equation}
+where $\mu_k $is the regularized parameter and $g (x_F^k) = \frac{1}{2}
+\sum_{i = 1}^M \nabla | r_i (x_F) |^2 = \sum_{i = 1}^M \nabla r_i (x_F) r_i
+(x_F)$, $\hspace{1.0em} H (x_F^k) = \sum_{i = 1}^M \nabla r_i (x_F) \nabla r_i
+(x_F)^T$. the LM step is obtained by solving the subproblem:
+\text{$\tmop{argmin}_h m_k (x_F^k + h)$}
+
+i.e $h_F^k \leftarrow (H (x_F^k) + \mu^k I) h = - g (x_F^k)$. the ratio $\rho$
+is defined as
+\begin{equation}
+  \rho_k = \frac{f (x^k_F) - f (x^k_F + h_F^k)}{m_k (x^k_F) - m_k (x^k_F +
+  h_F^k)}
+\end{equation}
+
+
+\begin{flushleft}
+  \begin{flushleft}
+    {\noindent}\begin{tmparmod}{0pt}{0pt}{0em}%
+      \begin{tmparsep}{0em}%
+        {\tmstrong{Algorithm 1.1\quad Stochastic LM algorithm}}{\smallskip}
+        
+        \begin{tmindent}
+          Step 0 Random choose an parameter set $F$ and $\mu > 0$, initial
+          damping parameter $\mu^0 = \mu \| r (x_F^0) \|^2$, constants
+          $\matheuler > 1$, $\mu_{\min}$ and $\eta_1, \eta_2 > 0$,set $k = 0$
+          
+          \
+          
+          Step 1 if a stopping criteria is satisfied, go to Step 0 or stop;
+          otherwise, go to {\hspace{}}Step 2.
+          
+          \
+          
+          Step 2 obtain the direction $h_F^k$
+          
+          \
+          
+          Step 3 Compute the ratio $\rho_k $ in $(4)$
+          
+          \
+          
+          Step 4 if $\rho_k \geqslant \eta_1$ and $\| g (x_F^k) \|^2
+          \geqslant \frac{\eta_2}{\mu^k}$, set $x^{k + 1}_F \leftarrow x^k_F +
+          h_F^k$ and $\mu^{k + 1} = \max (\mu^k / \matheuler, \mu_{\min})$;
+          otherwise set $x_F^{k + 1} = x_F^k \tmop{and} \mu^{k + 1} =
+          \matheuler \mu^k $. Then $k = k + 1$, go to step 1.
+        \end{tmindent}
+      \end{tmparsep}
+    \end{tmparmod}{\medskip}
+  \end{flushleft}
+\end{flushleft}
+
+\section{Convergence analysis}
+
+\begin{proposition}
+  Suppose $\tau^k$ is the solution of $\tmop{argmin}_h m_k (x_F^k + h)$, then
+  the following condition hold:
+  \begin{equation}
+    m_k (x^k_F) - m_k (x^k_F + \tau^k) \geqslant \frac{1}{4}  \| g (x_F^k)
+    \|^2 \min \left\{ \frac{1}{\mu^k}, \frac{1}{\| H (x_F^k) \|} \right\}
+  \end{equation}
+  and
+  \begin{equation}
+    \| \tau^k \| \leqslant \frac{2 \| g (x_F^k) \|}{\mu^k}
+  \end{equation}
+\end{proposition}
+
+\begin{proposition}
+  Suppose $r_i (x)$ are continuously differentiable and $\nabla r_i (x)$ are
+  Lipschitz continuous. $f (x) $is bounded. $\| H (x) \| \leqslant c$ for a
+  constant $c > 0$
+  
+  \quad Moreover, Under Assumption 2., there exist a constant Lipschitz
+  coffecient $L > 0$ and constrain $x_F, y_F \in F$  .Then the descent lemma
+  tells
+  \begin{equation}
+    | f (y_F) - f (x_F) - \nabla f (x)^T  (y - x) | \leqslant \frac{L}{2} \| y
+    - x \|^2
+  \end{equation}
+\end{proposition}
+
+\begin{lemma}
+  If Assumption 1. 2. holds. Then almost surely $\mu^k > \kappa$ for any
+  $\kappa > 0$.
+\end{lemma}
+
+\begin{proof}
+  For a constant $\kappa > 0$. Prove by contradiction. Assume the set $\{ k |
+  \nobracket \mu^k < \kappa \}$ is infinite, also can conclude \ $P (\{ k |
+  \nobracket \mu^k < \kappa \} = \infty) = \alpha > 0$. According to the
+  algorithm, there has probability $a \tmop{that} \mu^k$ decrease infinite
+  times. When the iteration is successful, $\rho_k \geqslant \eta_1$ and $\| g
+  (x_F^k) \|^2 \geqslant \frac{\eta_2}{\mu^k}$ \,holds. Consider the
+  set{\hspace{1.0em}}$S = \{ k | \tmop{the} k \tmop{th} \tmop{iteration}
+  \tmop{is} \tmop{successful} \nobracket \}$
+  \begin{equation}
+    \sum_{k \in S} (f (x^k_F) - f (x^k_F + h_F^k)) \geqslant \sum_{k \in S}
+    \frac{\eta_1}{4}  \| g (x_F^k) \|^2 \min \left\{ \frac{1}{\mu^k},
+    \frac{1}{\| H (x_F^k) \|} \right\} \geqslant \sum_{k \in S}  \frac{\eta_1
+    \eta_2}{4 \kappa} \min \left\{ \frac{1}{\kappa}, \frac{1}{c} \right\}
+  \end{equation}
+  note that $| S | = \infty \; \tmop{happens} \tmop{with} \: \tmop{positve} \;
+  \tmop{probability} \alpha$. So $E \left[ \sum_{k \in S} (f (x^k_F) - f
+  (x^k_F + h_F^k)) \right] = \infty$. However, accoding to the assumption 2.
+  $f (x)$ is bounded, which implies
+  
+  $E \left[ \sum_{k \in S} (f (x^k_F) - f (x^k_F + h_F^k)) \right] \leqslant
+  E [2 f (x_F)] < \infty$. We obtain the contradiction with $P (\{ k |
+  \nobracket \mu^k < \kappa \} = \infty) = \alpha > 0$. the proof is
+  completed.
+\end{proof}
+
+\begin{lemma}
+  If Assumption 1. 2. holds. When $\mu^k \geqslant \max \left\{ c, \frac{8 (L
+  + c)}{1 - \eta_1} \right\}$ , then $\rho_k > \eta_1$.
+\end{lemma}
+
+\begin{proof}
+  According to the Assumption 1. 2. and the condition $\mu^k \geqslant \max
+  \left\{ c, \frac{8 (L + c)}{1 - \eta_1} \right\}$, we derive the inequality
+  \begin{equation}
+    m_k (x^k_F) - m_k (x^k_F + h_F^k) \geqslant \frac{1}{4}  \| g (x_F^k) \|^2
+    \min \left\{ \frac{1}{\mu^k}, \frac{1}{\| H (x_F^k) \|} \right\}
+  \end{equation}
+  recall the model $m_k (x^k_F) = f (x^k_F)$. Rewrite the the descent lemma
+  \[ f (x^k_F + h_F^k) \leqslant m (x^k_F) + g (x_F^k)^T h_F^k + \frac{L}{2} 
+     \| h_F^k \|^2 \]
+  
+  
+  thus,
+  \[ f (x^k_F + h_F^k) - m_k (x^k_F + h_F^k) \leqslant \frac{L}{2}  \| h_F^k
+     \|^2 - \frac{1}{2} h_F^{\tmop{kT}} H (x_F^k) h_F^k - \frac{1}{2} \mu^k 
+     \| h_F^k \|^2 \leqslant \frac{L + c}{2}  \| h_F^k \|^2 \leqslant 2 (L +
+     c)  \frac{\| g (x^k_F) \|}{\mu^{k \; 2}} \]
+  combined with the definition of $\rho_k$, $1 - \rho_k \leqslant \frac{8 (L +
+  c)}{\mu^k} \Rightarrow \rho_k \geqslant 1 - \frac{8 (L + c)}{\mu^k}
+  \geqslant \eta_1$. the proof is completed
+  
+  \ 
+\end{proof}
+
+The following lemmas prove Algorithm 1.1 convergence with probability. Set
+$\beta \assign d \sqrt{1 - \frac{1}{2 \mu^{k \; 2}  \| g (x^k) \|^4}}$
+
+\begin{lemma}
+  if $b$ in $\mathcal{F}_b$ satisfies $b \geqslant \beta$ , then the event
+  \[ I_k \assign \left\{ \left| \| g (x_F^k) \|^2 - \frac{b}{d} \| g (x^k)
+     \|^2 \right| < \frac{1}{\mu^k} \right\} \]
+  has $P (I_k) > \frac{1}{2}$.
+\end{lemma}
+
+\begin{proof}
+  Recall the definition $\textit{\mathcal{F}_b} \assign \left\{ F_l |
+  \nobracket F_l \subset \hspace{0.8em} \tmop{the} \; \tmop{power} \;
+  \tmop{set} \; \tmop{of} \hspace{0.8em} \{ 1, \cdots, d \}, \infixand | F_l |
+  = b \right\}$, so $| \mathcal{F}_b | = \binom{b}{d}$, and $F$ is uniformly
+  random chosen from $\mathcal{F}_b$.
+  \[ E [\| g (x_F^k) \|^2] = E \left[ \sum_{i \in F} (g_i (x^k))^2 \right] =
+     \sum_l \sum_{i \in F_l} (g_i (x^k))^2 p (F_l) = \binom{b}{d}  \frac{b}{d}
+     \sum_{i = 0}^d (g_i (x^k))^2  \frac{1}{\binom{b}{d}} = \frac{b}{d} \| g
+     (x^k) \|^2 \]
+  and the variance
+  \begin{eqnarray*}
+    \tmop{Var} [\| g (x_F^k) \|^2] & = & E [\| g (x_F^k) \|^4] - E [\| g
+    (x_F^k) \|^2]^2\\
+    & = & \sum_l \left( \sum_{i \in F_l} (g_i (x^k))^2 \right)^2 p (F_l) -
+    \left( \frac{b}{d} \| g (x^k) \|^2 \right)^2\\
+    & \leqslant & \sum_l \left( \sum_{i = 0}^d (g_i (x^k))^2 \right)^2 p
+    (F_l) - \frac{b^2}{d^2} \| g (x^k) \|^4\\
+    & = & \| g (x^k) \|^4 - \frac{b^2}{d^2} \| g (x^k) \|^4\\
+    & \leqslant & \left( 1 - \frac{\beta^2}{d^2} \right) \| g (x^k) \|^4
+  \end{eqnarray*}
+  By the Chebyshev's inequality, we can obtain
+  \[ P \left\{ \left| \| g (x_F^k) \|^2 - \frac{b}{d} \| g (x^k) \|^2 \right|
+     < \frac{1}{\mu^k} \right\} > 1 - \mu^{k\; 2} \tmop{Var} [\| g (x_F^k)
+     \|^2] > \frac{1}{2} \]
+  
+\end{proof}
+
+\begin{theorem}
+  Let the Assumption 1. 2. hold and condition in lemma 5 hold. Then the
+  sequence of the total parameter $\{ x^k \}$ generated by Algorithm, almost
+  surely satisfies
+  \[ \lim_{k \rightarrow \infty} \inf \| g (x^k) \| = 0 \]
+  
+\end{theorem}
+
+\begin{proof}
+  Prove this theorem by contradiction. Assume there exists $\varepsilon > 0$
+  such that\qquad $ \| g (x^k) \|^2 \geqslant \frac{d}{b} \varepsilon$ for all
+  $k \geqslant k_0$. According to the lemma 3., \ there exists $k > k_1 $ such
+  that
+  \begin{equation}
+    \mu^k > \chi \assign \max \left\{ \frac{2}{\varepsilon}, \; \frac{2
+    \eta_2}{\varepsilon}, \; c, \frac{8 (L + c)}{1 - \eta_1}, \; \gamma
+    \mu_{\min} \right\}
+  \end{equation}
+  Define $R_k = \log_{\gamma} \left( \frac{\chi}{\mu^k} \right),$ by the
+  assumption, $R_k \leqslant 0$ for all $k > \max (k_0, k_1) $. \
+  
+  \quad Since $\mu^k > \max \left\{ c, \frac{8 (L + c)}{1 - \eta_1}
+  \right\}$, then $\rho_k \geqslant \eta_1$. So the iteration success just
+  depends on $\| g (x_F^k) \|^2$. In lemma 5., we have
+  
+  $\left| \| g (x_F^k) \|^2 - \frac{b}{d} \| g (x^k) \|^2 \right| <
+  \frac{1}{\mu^k}$ with probability $\upsilon > \frac{1}{2}$. $\left| \| g
+  (x_F^k) \|^2 - \frac{b}{d} \| g (x^k) \|^2 \right| < \frac{1}{\mu^k} <
+  \frac{\varepsilon}{2}$ then $\| g (x_F^k) \|^2 \geqslant
+  \frac{\varepsilon}{2}$. From $(10) $, we can further obtain $\| g (x_F^k)
+  \|^2 > \frac{\eta_2}{\mu^k}$ which implies a successful iteration.
+  
+  $E [R_{k + 1}] = v \left( \log_{\gamma} \left( \frac{\chi \gamma}{\mu^k }
+  \right) \right) + (1 - v) \log_{\gamma} \left( \frac{\chi}{\mu^k \gamma}
+  \right) = v \left( \log_{\gamma} \left( \frac{\chi}{\mu^k} \right) + 1
+  \right) + (1 - v) \left( \log_{\gamma} \left( \frac{\chi}{\mu^k} \right) - 1
+  \right) \geqslant R_k$
+  
+  Since $| R_{k + 1} - R_k | \geqslant 1$, we can conclude $P \left[ \;
+  \lim_{k \rightarrow \infty} \sup R_k  \; > \; 0 \right] = 1$ which leads to
+  a contradiction to our assumption: $R_k \leqslant 0$ for all $k > \max (k_0,
+  k_1) .$ So $\lim_{k \rightarrow \infty} \inf \| g (x^k) \| = 0$ holds \
+  almost surely.
+  
+  
+\end{proof}}}
+
+\end{document}
