@@ -13,9 +13,17 @@ import time
 from matplotlib.ticker import FuncFormatter
 pi=np.pi
 class PINN_LM:
+    """
+    同为2 维 ： 需要修改的方法：
+    newspampling()
+    LM(): fx_fun() 
+          J_func()
+    
+          plot_l2error.py 中exact solution
+    """
     def __init__(self):
         self.input_size = 2
-        self.hidden_size =20
+        self.hidden_size =30
         self.output_size = 1
         self.depth = 1
         global device
@@ -54,11 +62,11 @@ class PINN_LM:
             """
             # 指定区间
             torch.set_default_dtype(torch.float64)
-            lower_boundx = -1
-            upper_boundx = 1
+            lower_boundx = 0
+            upper_boundx = pi
             lower_boundy=0
-            upper_boundy=1
-            random_samples = 20
+            upper_boundy=pi
+            random_samples = 35
             torch.manual_seed(1+i)
             x = (upper_boundx - lower_boundx) * torch.rand(random_samples) + lower_boundx 
             torch.manual_seed(2+i)
@@ -68,40 +76,30 @@ class PINN_LM:
             self.X_inside.requires_grad = True
             self.X_inside_num=self.X_inside.size(0) 
             
-            random_samples = 40
-            torch.manual_seed(3+i)
-            x = (upper_boundx - lower_boundx) * torch.rand(random_samples) + lower_boundx 
+            random_samples = 100
             torch.manual_seed(4+i)
             y = (upper_boundy - lower_boundy) * torch.rand(random_samples) + lower_boundy 
             bc1 = torch.stack(torch.meshgrid(torch.tensor(lower_boundx).double(), y)).reshape(2, -1).T  # x=-1边界
             bc2 = torch.stack(torch.meshgrid(torch.tensor(upper_boundx).double(), y)).reshape(2, -1).T  # x=+1边界
             random_samples=100
-            x = (upper_boundx - lower_boundx) * torch.rand(random_samples) + lower_boundx 
+            torch.manual_seed(3+i)
+            x = (upper_boundx - lower_boundx) * torch.rand(random_samples) + lower_boundx  
             bc3 = torch.stack(torch.meshgrid(x, torch.tensor(lower_boundy).double())).reshape(2, -1).T # y=0边界
+            bc4 = torch.stack(torch.meshgrid(x, torch.tensor(upper_boundy).double())).reshape(2, -1).T # y=0边界
 
-            self.X_boundary = torch.cat([bc1, bc2, bc3])  # 将所有边界处的时空坐标点整合为一个张量
-            self.X_boundary1=torch.cat([bc1, bc2])
-            self.X_boundary2=bc3
-
+            self.X_boundary = torch.cat([bc1, bc2, bc3,bc4])  # 将所有边界处的时空坐标点整合为一个张量
             
-            self.X_boundary_num1=self.X_boundary1.size(0)
-            self.X_boundary_num2=self.X_boundary2.size(0)
-            self.X_boundary_num=self.X_boundary_num1+self.X_boundary_num2
+            self.X_boundary_num=self.X_boundary.size(0)
+            
             self.X_inside_num=self.X_inside.size(0)
 
-        
             self.X_boundary=self.X_boundary.to(device)
-            self.X_boundary1=self.X_boundary1.to(device)
-            self.X_boundary2=self.X_boundary2.to(device)
+
             self.X_inside=self.X_inside.to(device)
 
             self.X_boundary.requires_grad = True
-            self.X_boundary1.requires_grad = True
-            self.X_boundary2.requires_grad = True
-
+            
             self.X_boundary=self.X_boundary.double()
-            self.X_boundary1=self.X_boundary1.double()
-            self.X_boundary2=self.X_boundary2.double()
             self.X_inside=self.X_inside.double()
 
     
@@ -170,25 +168,25 @@ class PINN_LM:
                 retain_graph=True,
                 create_graph=True
             )[0][:, 0]
+            du_dyy = torch.autograd.grad(
+                inputs=self.X_inside,
+                outputs=du_dY,
+                grad_outputs=torch.ones_like(du_dY),
+                retain_graph=True,
+                create_graph=True
+            )[0][:, 1]
             
         
-            fx = du_dY-du_dxx + torch.exp(-self.X_inside[:,1])*(torch.sin(pi*self.X_inside[:,0])-(pi**2)*torch.sin(pi*self.X_inside[:,0]))
+            fx = du_dyy+du_dxx + 68* torch.sin(8*self.X_inside[:,0])*torch.sin(2*self.X_inside[:,1])
             fx=fx.to(device)
             fx=fx.view(-1)
             
-            f_bd = f(params, self.X_boundary1)
+            f_bd = f(params, self.X_boundary)
             
             fx_bd = f_bd.view(-1)
             
 
             fx = torch.cat((fx, fx_bd), dim=0)
-
-            f_ini=f(params, self.X_boundary2)
-            f_ini=f_ini.view(-1)
-            
-            fx_ini = f_ini-torch.sin(torch.pi*self.X_boundary2[:,0])
-            
-            fx = torch.cat((fx, fx_ini), dim=0)
             fx=fx.t()
             return fx
 
@@ -214,14 +212,14 @@ class PINN_LM:
                     return fx.squeeze(0).squeeze(0)
                 def floss(func_params,input):
                     f_inside=fm(input, func_params) 
-                    d1u = jacrev((fm))(input, func_params)            
+                    d1u = jacrev(fm)(input,func_params)         
                     d2u = jacrev(jacrev(fm))(input,func_params)
                     
-                    du_dY=d1u[1]    
-                    du_dX=d1u[0]    
+                      
+                    du_dyy=d2u[1][1] 
                     du_dxx=d2u[0][0]     
                     
-                    fx = du_dY-du_dxx + torch.exp(-input[1])*(torch.sin(pi*input[0])-(pi**2)*torch.sin(pi*input[0]))
+                    fx = du_dyy+du_dxx + 68*torch.sin(8*input[0])*torch.sin(2*input[1])
                     # print('du_dY',du_dY)
                     return fx
                     
@@ -264,36 +262,9 @@ class PINN_LM:
                 
                 return result
             
-            def INIC(params,input):
-                f_bound=f(params,input)
-                
-                def SINP(x):
-                    return torch.sin(torch.pi*x)
-                func_model, func_params = make_functional(self.model)
-                def fm(x, func_params):
-                    fx = func_model(func_params, x)
-                    return fx.squeeze(0).squeeze(0)
-                def floss(func_params,input):           
-                    fx = fm(input, func_params)-torch.sin(torch.pi*input[0])
-                    return fx
-                
-                per_sample_grads =vmap(jacrev(floss), (None, 0))(func_params, input)
-                
-                cnt=0
-                for g in per_sample_grads: 
-                    g = g.detach()
-                    J_d = g.reshape(len(g),-1) if cnt == 0 else torch.hstack([J_d,g.reshape(len(g),-1)])
-                    cnt = 1
-                
-                result= J_d.detach()
-                
-
-                return result
             
             J[range(self.X_inside_num), :] = Inter(params, self.X_inside)
-            J[range(self.X_inside_num, self.X_inside_num + self.X_boundary_num1), :] = Bound(params, self.X_boundary1)
-            J[range(self.X_inside_num + self.X_boundary_num1, self.X_inside_num + self.X_boundary_num1+self.X_boundary_num2), :] = INIC(params, self.X_boundary2)
-            
+            J[range(self.X_inside_num, self.X_inside_num + self.X_boundary_num), :] = Bound(params, self.X_boundary)
             
             return J
         
@@ -309,9 +280,9 @@ class PINN_LM:
         F_p = torch.tensor(10).to(device)
         F_pnew = 0
         alpha = 1
-        lambda_up = 10
-        lambda_down = 0.1
-        yi=1e-15
+        lambda_up = 5
+        lambda_down = 0.2
+        yi=1e-7
         yi2=1e-15
         diag = torch.eye(p_number)
         fx = fx_fun(p)
@@ -338,12 +309,29 @@ class PINN_LM:
                 fx = fx_fun(p)
                 gkF=torch.matmul(J_opt.t(),fx)
                 gk=torch.matmul(J.t(),fx)
+ 
+                
+                # LU, pivots = torch.linalg.lu_factor(H)
+                # # 生成单位矩阵，确保是二维矩阵
+                # LU=LU.to(device)
+                # pivots = pivots.to(device)
+                # h_lm = torch.linalg.lu_solve(LU, pivots, -gkF.unsqueeze(1))
                 try:              
-                    h_lm = torch.linalg.solve(H, -gkF)             
+                    h_lm = torch.linalg.solve(H, -gkF)   
+                    #LU decomposition
+                    #pinv 
+                    # h_lm = torch.linalg.pinv(H) @ -gkF
+                   
+                    
+
                 except:
                     print('singular matrix')
+                    print("mu:", mu)
+                    
+                    break
+                    print(-gkF)
                 
-                if (torch.abs(F_p - F_pnew)/torch.tensor(F_p).to(device)< 1e-5):  # 满足收敛条件
+                if (torch.abs(F_p - F_pnew)/torch.tensor(F_p).to(device)< 1e-15):  # 满足收敛条件
                     print('converge in para updates')
                     break
                 else:
@@ -356,11 +344,11 @@ class PINN_LM:
                     o = F_p - F_pnew
                     o_=torch.matmul(gkF.t(),h_lm)+1/2*torch.matmul(h_lm.t(),torch.matmul(A_opt,h_lm))+1/2*mu*torch.norm(h_lm, p=2)
                     
-                    if o/o_ > yi and torch.norm(gkF,p=2)**2>yi2/mu:
-                        print('Zhuyi:',torch.sqrt(1-1/(2*torch.norm(gk,p=2)**4 * mu**2))) #torch.sqrt(1-1/(2*torch.norm(gk,p=2)**4 * mu**2))
+                    if o>0 and o/o_ > yi and torch.norm(gkF,p=2)**2>yi2/mu:
+                        #print('Zhuyi:',torch.sqrt(1-1/(2*torch.norm(gk,p=2)**4 * mu**2))) #torch.sqrt(1-1/(2*torch.norm(gk,p=2)**4 * mu**2))
                         self.loss_record[self.loss_iter] = float(F_pnew.item())
                         self.loss_iter += 1
-                        if k%10==0:
+                        if k%1==0:
                             print("steps ", k, end=' ')
                             print('accept move')
                             print("Loss =", F_p.item(), end=' ')

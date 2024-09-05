@@ -17,7 +17,7 @@ def plot_model_error(model, x_bounds, y_bounds, device='cuda'):
     X = torch.DoubleTensor(np.stack([xx.ravel(), tt.ravel()], axis=1)).to(device)
     
     # 计算目标值
-    target_y = (torch.exp(-X[:,1]) * torch.sin(np.pi * X[:,0])).flatten()[:, None].cpu()
+    target_y = (torch.sin(8*X[:,0]) * torch.sin(2* X[:,1])).flatten()[:, None].cpu()
     
     # 计算模型的输出
     with torch.no_grad():
