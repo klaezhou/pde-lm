@@ -203,9 +203,13 @@
       \;
     </proof>
 
-    The following lemmas prove Algorithm 1.1 convergence with probability.
-    Set <math|\<beta\>\<assign\>d*<sqrt|1-<frac|1|2\<mu\><rsup|k<space|0.6spc>
-    2>*<around*|\<\|\|\>|g<around*|(|x<rsup|k>|)>|\<\|\|\>><rsup|4>>>>
+    The following lemmas prove Algorithm 1.1 convergence with probability. \ 
+
+    Set<space|1em><math|\<beta\>><space|0.5em><math|\<assign\>><around*|{|<eqnarray*|<tformat|<cwith|2|2|1|1|cell-hyphen|n>|<cwith|1|1|1|1|cell-hyphen|n>|<cwith|2|2|1|1|cell-halign|c>|<table|<row|<cell|d*<sqrt|1-<frac|1|2\<mu\><rsup|k<space|0.6spc>
+    2>*<around*|\<\|\|\>|g<around*|(|x<rsup|k>|)>|\<\|\|\>><rsup|4>>>>|<cell|>|<cell|if<space|1em><frac|1|2\<mu\><rsup|k<space|0.6spc>
+    2>*<around*|\<\|\|\>|g<around*|(|x<rsup|k>|)>|\<\|\|\>><rsup|4>>\<leqslant\>1>>|<row|<cell|0>|<cell|>|<cell|otherwise>>>>>|\<nobracket\>>
+
+    \;
 
     <\lemma>
       if <math|b> in <math|\<cal-F\><rsub|b>> satisfies
@@ -319,6 +323,8 @@
   <\collection>
     <associate|auto-1|<tuple|1|1>>
     <associate|auto-2|<tuple|2|2>>
+    <associate|footnote-1|<tuple|1|?>>
+    <associate|footnr-1|<tuple|1|?>>
   </collection>
 </references>
 
